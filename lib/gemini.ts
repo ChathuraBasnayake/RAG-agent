@@ -57,5 +57,6 @@ export async function generateResponse(
 ): Promise<string> {
   const model = getGeminiModel(config);
   const result = await model.generateContent(prompt);
+  console.log("Gemini response metadata:", result.response.text());
   return result.response.text();
 }
