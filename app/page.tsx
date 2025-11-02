@@ -1,3 +1,10 @@
+/**
+ * F1 GPT Home Page
+ * 
+ * Main entry point for the Formula 1 AI chatbot
+ * Uses ChatInterface component with F1-specific branding and suggested questions
+ */
+
 "use client";
 
 import ChatInterface from "../components/ChatInterface";

@@ -8,11 +8,14 @@ if (!GOOGLE_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(GOOGLE_API_KEY);
 
+/**
+ * Configuration options for Gemini model generation
+ */
 export type GeminiConfig = {
-  temperature?: number;
-  topP?: number;
-  topK?: number;
-  maxOutputTokens?: number;
+  temperature?: number;      // Randomness (0.0-1.0, higher = more creative)
+  topP?: number;             // Nucleus sampling (0.0-1.0)
+  topK?: number;             // Top-k sampling (number of tokens to consider)
+  maxOutputTokens?: number;  // Maximum length of response
 };
 
 const defaultConfig: GeminiConfig = {
@@ -24,7 +27,10 @@ const defaultConfig: GeminiConfig = {
 
 /**
  * Get Gemini model instance with optional configuration
- * @param config - Optional configuration for the model
+ * Uses gemini-2.0-flash-exp model optimized for speed and quality
+ * 
+ * @param config - Optional configuration to override defaults
+ * @returns Configured Gemini model instance
  */
 export function getGeminiModel(config: GeminiConfig = {}) {
   return genAI.getGenerativeModel({
@@ -35,8 +41,11 @@ export function getGeminiModel(config: GeminiConfig = {}) {
 
 /**
  * Generate a response using Gemini with streaming
+ * Returns chunks of text as they're generated for real-time display
+ * 
  * @param prompt - The prompt to send to Gemini
  * @param config - Optional model configuration
+ * @returns Stream of content chunks
  */
 export async function generateStreamingResponse(
   prompt: string,
@@ -48,8 +57,11 @@ export async function generateStreamingResponse(
 
 /**
  * Generate a response using Gemini without streaming
+ * Waits for the complete response before returning
+ * 
  * @param prompt - The prompt to send to Gemini
  * @param config - Optional model configuration
+ * @returns The generated text response
  */
 export async function generateResponse(
   prompt: string,
@@ -57,6 +69,5 @@ export async function generateResponse(
 ): Promise<string> {
   const model = getGeminiModel(config);
   const result = await model.generateContent(prompt);
-  console.log("Gemini response metadata:", result.response.text());
   return result.response.text();
 }

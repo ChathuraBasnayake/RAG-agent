@@ -1,3 +1,16 @@
+/**
+ * ChatInterface Component
+ * 
+ * A professional ChatGPT-style chat interface with:
+ * - Collapsible sidebar with conversation history
+ * - Real-time streaming responses
+ * - Auto-resizing input textarea
+ * - Suggested questions for quick start
+ * - Customizable branding and colors
+ * 
+ * Can be used standalone (handles API calls internally) or with custom message handler
+ */
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";

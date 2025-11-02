@@ -1,5 +1,10 @@
 import { generateRAGResponse } from "@/lib/rag";
 
+/**
+ * POST /api/chat
+ * Handles chat requests with RAG (Retrieval-Augmented Generation)
+ * Streams responses back to the client in real-time
+ */
 export async function POST(req: Request) {
   const encoder = new TextEncoder();
 
@@ -25,7 +30,7 @@ export async function POST(req: Request) {
           5 // Retrieve top 5 relevant documents
         );
 
-        // Stream the response chunks
+        // Stream the response chunks to the client
         for await (const chunk of geminiStream) {
           const chunkText = chunk.text();
           controller.enqueue(
