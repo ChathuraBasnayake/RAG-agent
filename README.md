@@ -1,15 +1,17 @@
-# F1 GPT 🏎️
+# F1 GPT 🏎️ 🎙️
 
-A professional Formula 1 AI chatbot powered by **RAG (Retrieval-Augmented Generation)** technology. Ask anything about Formula 1 and get accurate, context-aware responses backed by a vector database.
+A professional Formula 1 AI chatbot powered by **RAG (Retrieval-Augmented Generation)** technology with **voice assistance**. Ask anything about Formula 1 via text or voice and get accurate, context-aware responses backed by a vector database.
 
 ## 🚀 Features
 
+- **🎙️ Voice-Enabled**: Speak your questions and hear AI responses
 - **Free & Local Embeddings**: Uses `sentence-transformers/all-MiniLM-L6-v2` (384 dimensions)
 - **Google Gemini AI**: Fast, streaming responses with Gemini 2.0 Flash
 - **Vector Database**: DataStax Astra DB for semantic search
 - **Modern UI**: ChatGPT-style interface with Tailwind CSS v4
 - **Fully Modular**: Clean architecture with separated concerns
 - **Real-time Streaming**: See responses as they're generated
+- **Natural Voice**: Google Cloud Text-to-Speech with neural voices
 
 ## 🏗️ Architecture
 
@@ -18,16 +20,19 @@ lib/
   ├── embeddings.ts    # Local embedding generation (all-MiniLM-L6-v2)
   ├── vectorDb.ts      # Astra DB operations (search, insert)
   ├── gemini.ts        # Gemini AI integration (streaming, non-streaming)
+  ├── textToSpeech.ts  # 🎙️ Google Cloud TTS (voice output)
   └── rag.ts           # RAG orchestration (retrieve → generate)
 
 app/
-  ├── api/chat/        # Streaming chat API endpoint
+  ├── api/
+  │   ├── chat/        # Streaming text chat API endpoint
+  │   └── voice/       # 🎙️ Voice chat API endpoint (NEW)
   ├── page.tsx         # Main chat interface
   ├── layout.tsx       # Root layout
   └── global.css       # Tailwind styles
 
 components/
-  └── ChatInterface.tsx # Reusable chat UI component
+  └── ChatInterface.tsx # 🎙️ Reusable chat UI with voice features
 
 scripts/
   └── loadDb-clean.ts  # Data loading pipeline
@@ -40,9 +45,11 @@ scripts/
 - **AI/ML**:
   - Embeddings: `@xenova/transformers` (Xenova/all-MiniLM-L6-v2)
   - LLM: `@google/generative-ai` (Gemini 2.0 Flash Exp)
+  - 🎙️ TTS: `@google-cloud/text-to-speech` (Neural voices)
 - **Database**: DataStax Astra DB (`@datastax/astra-db-ts`)
 - **Styling**: Tailwind CSS v4 with `@tailwindcss/postcss`
 - **Icons**: `lucide-react`
+- **Voice**: Web Speech API (STT, browser-native)
 - **Data Loading**:
   - `puppeteer` for web scraping
   - `langchain` for text splitting
@@ -103,6 +110,20 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and start chatting!
+
+**🎙️ For voice features:** See [VOICE_SETUP.md](./VOICE_SETUP.md) for detailed voice setup guide.
+
+## 🎙️ Using Voice Features
+
+1. **Click the microphone icon** 🎤 in the chat input
+2. **Allow microphone access** (first time only)
+3. **Speak your question** - You'll see "Listening..."
+4. **AI processes and responds** with both text and voice
+5. **Click speaker icon** to stop audio playback
+
+**Voice Technologies:**
+- **STT**: Web Speech API (free, browser-native)
+- **TTS**: Google Cloud TTS (free tier: 1M chars/month)
 
 ## 📝 Scripts
 

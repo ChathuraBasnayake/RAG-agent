@@ -1,4 +1,4 @@
-# F1 GPT - Clean Architecture
+# F1 GPT - Clean Architecture (Voice-Enabled)
 
 ## 📁 Project Structure
 
@@ -8,12 +8,17 @@ rag-f1/
 │   ├── embeddings.ts         # Embedding generation
 │   ├── vectorDb.ts           # Vector database operations
 │   ├── gemini.ts             # Gemini AI integration
+│   ├── textToSpeech.ts       # 🎙️ Google Cloud TTS (NEW)
 │   └── rag.ts                # RAG orchestration
 ├── app/
-│   ├── api/chat/route.ts     # API endpoint (thin layer)
+│   ├── api/
+│   │   ├── chat/route.ts     # Text chat API endpoint
+│   │   └── voice/route.ts    # 🎙️ Voice chat API endpoint (NEW)
 │   ├── page.tsx              # UI component
 │   ├── layout.tsx            # Layout component
 │   └── global.css            # Styles
+├── components/
+│   └── ChatInterface.tsx     # 🎙️ Chat UI with voice features (UPDATED)
 ├── scripts/
 │   └── loadDb-clean.ts       # Data loading script
 └── .env                      # Environment variables
@@ -102,8 +107,41 @@ console.log(`Used ${sources} sources`);
 
 ---
 
+### 5. **`lib/textToSpeech.ts`** - 🎙️ Text-to-Speech (NEW)
+**Purpose:** Convert AI responses to natural voice using Google Cloud TTS
+
+**Functions:**
+- `getTTSClient()` - Get or initialize Google TTS client
+- `textToSpeech(text, config)` - Convert text to MP3 audio
+- `getAvailableVoices(languageCode)` - List available voices
+
+**Example:**
+```typescript
+import { textToSpeech } from "@/lib/textToSpeech";
+
+const audioBase64 = await textToSpeech("Formula 1 is exciting!");
+// Returns: base64-encoded MP3 audio
+
+// Custom voice
+const audio = await textToSpeech("Hello!", {
+  voiceName: 'en-US-Neural2-F',
+  speakingRate: 1.2,
+  pitch: 2
+});
+```
+
+**Configuration:**
+- Language: en-US (default)
+- Voice: Neural2-F (natural female voice)
+- Format: MP3
+- Speaking Rate: 0.25 - 4.0
+- Pitch: -20 to +20
+
+---
+
 ## 🔄 Data Flow
 
+### **Text Chat Flow:**
 ```
 User Question
     ↓
@@ -124,11 +162,33 @@ User Question
 Response to User
 ```
 
+### **🎙️ Voice Chat Flow (NEW):**
+```
+User clicks Mic
+    ↓
+[Web Speech API] (Browser)
+    → Records audio & transcribes to text
+    ↓
+Client sends transcript to /api/voice
+    ↓
+[generateRAGResponse] (lib/rag.ts)
+    → Same RAG pipeline as text chat
+    ↓
+Server collects full response text
+    ↓
+[textToSpeech] (lib/textToSpeech.ts)
+    → Converts text to MP3 audio (base64)
+    ↓
+Client receives: { text, audio, sources }
+    ↓
+Browser plays audio + displays text
+```
+
 ---
 
 ## 🚀 Usage
 
-### API Route (`app/api/chat/route.ts`)
+### API Route - Text Chat (`app/api/chat/route.ts`)
 **Clean, minimal code - just 60 lines!**
 
 ```typescript
@@ -141,6 +201,36 @@ export async function POST(req: Request) {
   const { stream, sources } = await generateRAGResponse(question, 5);
   
   // Stream response...
+}
+```
+
+### 🎙️ API Route - Voice Chat (`app/api/voice/route.ts`) (NEW)
+**Voice-enabled endpoint - just 45 lines!**
+
+```typescript
+import { generateRAGResponse } from "@/lib/rag";
+import { textToSpeech } from "@/lib/textToSpeech";
+
+export async function POST(req: Request) {
+  const { text } = await req.json();
+  
+  // Get RAG response
+  const { stream, sources } = await generateRAGResponse(text, 5);
+  
+  // Collect full response
+  let fullResponse = "";
+  for await (const chunk of stream) {
+    fullResponse += chunk.text();
+  }
+  
+  // Convert to speech
+  const audioBase64 = await textToSpeech(fullResponse);
+  
+  return NextResponse.json({
+    text: fullResponse,
+    audio: audioBase64,
+    sources
+  });
 }
 ```
 
@@ -205,6 +295,38 @@ const config = {
 - **Vector DB:** DataStax Astra DB
 - **Framework:** Next.js 16 + TypeScript
 - **UI:** React + Tailwind CSS
+- **🎙️ Voice Input:** Web Speech API (browser-native, free)
+- **🎙️ Voice Output:** Google Cloud Text-to-Speech (natural voices)
+
+---
+
+## 🎙️ Voice Features
+
+### **How to Use Voice:**
+1. **Click the microphone button** in the chat input
+2. **Speak your question** (browser will show "Listening...")
+3. **AI processes via RAG** (same pipeline as text)
+4. **Response is spoken** and displayed as text
+5. **Click speaker icon** to stop audio playback
+
+### **Voice Technologies:**
+- **STT (Speech-to-Text):** Web Speech API
+  - ✅ Free, unlimited
+  - ✅ Browser-native (Chrome, Edge, Safari)
+  - ✅ Real-time transcription
+  - ⚠️ Requires microphone permission
+
+- **TTS (Text-to-Speech):** Google Cloud TTS
+  - ✅ Natural-sounding voices
+  - ✅ Free tier: 1M characters/month (~200-300 responses)
+  - ✅ High quality MP3 output
+  - ✅ Multiple languages & voices
+
+### **Browser Compatibility:**
+- ✅ Chrome/Edge: Full support
+- ✅ Safari: Full support
+- ⚠️ Firefox: Limited Web Speech API support
+- 💡 Always shows text fallback
 
 ---
 
@@ -214,5 +336,7 @@ const config = {
 2. **Customize prompts** - Modify `buildRAGPrompt()` in `lib/rag.ts`
 3. **Adjust parameters** - Change config in `lib/gemini.ts`
 4. **Add features** - Use clean modules in new routes/pages
+5. **🎙️ Customize voice** - Change TTS voice/settings in `lib/textToSpeech.ts`
+6. **🎙️ Add more languages** - Update `languageCode` for multi-language support
 
-Happy coding! 🏎️
+Happy coding! 🏎️ 🎙️
