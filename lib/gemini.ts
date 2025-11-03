@@ -1,12 +1,24 @@
+/**
+ * Gemini AI Module
+ * Handles all Google Gemini AI interactions for evaluation and feedback
+ */
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const { GOOGLE_API_KEY } = process.env;
+const { GOOGLE_GENERATIVE_AI_API_KEY } = process.env;
 
-if (!GOOGLE_API_KEY) {
-  throw new Error("Missing GOOGLE_API_KEY environment variable");
+if (!GOOGLE_GENERATIVE_AI_API_KEY) {
+  throw new Error("Missing GOOGLE_GENERATIVE_AI_API_KEY environment variable");
 }
 
-const genAI = new GoogleGenerativeAI(GOOGLE_API_KEY);
+const genAI = new GoogleGenerativeAI(GOOGLE_GENERATIVE_AI_API_KEY);
+
+// =============================================================================
+// TYPE DEFINITIONS
+// =============================================================================
+// =============================================================================
+// TYPE DEFINITIONS
+// =============================================================================
 
 /**
  * Configuration options for Gemini model generation
@@ -18,6 +30,7 @@ export type GeminiConfig = {
   maxOutputTokens?: number;  // Maximum length of response
 };
 
+// Default configuration for balanced responses
 const defaultConfig: GeminiConfig = {
   temperature: 0.7,
   topP: 0.95,
@@ -25,34 +38,26 @@ const defaultConfig: GeminiConfig = {
   maxOutputTokens: 2048,
 };
 
+// =============================================================================
+// MODEL FUNCTIONS
+// =============================================================================
+
+// =============================================================================
+// MODEL FUNCTIONS
+// =============================================================================
+
 /**
- * Get Gemini model instance with optional configuration
- * Uses gemini-2.0-flash-exp model optimized for speed and quality
+ * Get Gemini model instance with configuration
+ * Uses gemini-1.5-flash model for better rate limits and stability
  * 
  * @param config - Optional configuration to override defaults
  * @returns Configured Gemini model instance
  */
 export function getGeminiModel(config: GeminiConfig = {}) {
   return genAI.getGenerativeModel({
-    model: "gemini-2.0-flash-exp",
+    model: "gemini-1.5-flash",
     generationConfig: { ...defaultConfig, ...config },
   });
-}
-
-/**
- * Generate a response using Gemini with streaming
- * Returns chunks of text as they're generated for real-time display
- * 
- * @param prompt - The prompt to send to Gemini
- * @param config - Optional model configuration
- * @returns Stream of content chunks
- */
-export async function generateStreamingResponse(
-  prompt: string,
-  config?: GeminiConfig
-) {
-  const model = getGeminiModel(config);
-  return await model.generateContentStream(prompt);
 }
 
 /**
@@ -71,3 +76,4 @@ export async function generateResponse(
   const result = await model.generateContent(prompt);
   return result.response.text();
 }
+
