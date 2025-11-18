@@ -1,238 +1,61 @@
-# F1 GPT 🏎️ 🎙️
+# Web-Powered RAG Chat System
 
-A professional Formula 1 AI chatbot powered by **RAG (Retrieval-Augmented Generation)** technology with **voice assistance**. Ask anything about Formula 1 via text or voice and get accurate, context-aware responses backed by a vector database.
+This project is a Retrieval-Augmented Generation (RAG) chat application that converts any web URL into a searchable knowledge base. The system scrapes web content, generates embeddings, stores them for fast retrieval, and answers user queries using a large language model (LLM) grounded in real web data.
 
-## 🚀 Features
+---
 
-- **🎙️ Voice-Enabled**: Speak your questions and hear AI responses
-- **Free & Local Embeddings**: Uses `sentence-transformers/all-MiniLM-L6-v2` (384 dimensions)
-- **Google Gemini AI**: Fast, streaming responses with Gemini 2.0 Flash
-- **Vector Database**: DataStax Astra DB for semantic search
-- **Modern UI**: ChatGPT-style interface with Tailwind CSS v4
-- **Fully Modular**: Clean architecture with separated concerns
-- **Real-time Streaming**: See responses as they're generated
-- **Natural Voice**: Google Cloud Text-to-Speech with neural voices
+## Features
 
-## 🏗️ Architecture
+- **Web Scraping:** Uses Puppeteer to extract content dynamically from any given URL.
+- **Embedding Generation:** Creates vector embeddings of the content using `@xenova/transformers`.
+- **Vector Storage:** Stores embeddings in AstraDB for efficient similarity search.
+- **RAG Pipeline:** Retrieves relevant content chunks and feeds them to Google Gemini LLM for accurate responses.
+- **Text-to-Speech:** Integrates Google Cloud Text-to-Speech for voice responses.
+- **Modern Tech Stack:** Built on Next.js with LangChain, TailwindCSS, and TypeScript.
 
-```
-lib/
-  ├── embeddings.ts    # Local embedding generation (all-MiniLM-L6-v2)
-  ├── vectorDb.ts      # Astra DB operations (search, insert)
-  ├── gemini.ts        # Gemini AI integration (streaming, non-streaming)
-  ├── textToSpeech.ts  # 🎙️ Google Cloud TTS (voice output)
-  └── rag.ts           # RAG orchestration (retrieve → generate)
+---
 
-app/
-  ├── api/
-  │   ├── chat/        # Streaming text chat API endpoint
-  │   └── voice/       # 🎙️ Voice chat API endpoint (NEW)
-  ├── page.tsx         # Main chat interface
-  ├── layout.tsx       # Root layout
-  └── global.css       # Tailwind styles
+## Tech Stack
 
-components/
-  └── ChatInterface.tsx # 🎙️ Reusable chat UI with voice features
+| Technology                  | Purpose                                  |
+|----------------------------|------------------------------------------|
+| Next.js 16                 | Full-stack React framework               |
+| Puppeteer                  | Headless browser for web scraping       |
+| @xenova/transformers       | Local embedding generation               |
+| AstraDB                    | Vector database for storing embeddings  |
+| Google Generative AI (Gemini) | Language model for response generation  |
+| LangChain                  | Orchestrates RAG workflows                |
+| TailwindCSS 4              | Styling and UI design                     |
+| Google Cloud Text-to-Speech| Optional voice output for answers        |
+| TypeScript                 | Strongly typed JavaScript                 |
 
-scripts/
-  └── loadDb-clean.ts  # Data loading pipeline
-```
+---
 
-## 📦 Tech Stack
+## How It Works
 
-- **Framework**: Next.js 16 with React 19
-- **Language**: TypeScript 5
-- **AI/ML**:
-  - Embeddings: `@xenova/transformers` (Xenova/all-MiniLM-L6-v2)
-  - LLM: `@google/generative-ai` (Gemini 2.0 Flash Exp)
-  - 🎙️ TTS: `@google-cloud/text-to-speech` (Neural voices)
-- **Database**: DataStax Astra DB (`@datastax/astra-db-ts`)
-- **Styling**: Tailwind CSS v4 with `@tailwindcss/postcss`
-- **Icons**: `lucide-react`
-- **Voice**: Web Speech API (STT, browser-native)
-- **Data Loading**:
-  - `puppeteer` for web scraping
-  - `langchain` for text splitting
+1. **User Input:** Provide a URL to be added as a knowledge source.
+2. **Scraping:** Puppeteer visits the URL and extracts the webpage’s textual content.
+3. **Chunking:** The extracted content is divided into manageable chunks.
+4. **Embedding:** Each chunk is converted to a vector embedding using `@xenova/transformers`.
+5. **Storage:** Embeddings are stored in AstraDB for quick similarity search.
+6. **Query:** When a user asks a question, relevant chunks are retrieved based on embedding similarity.
+7. **Answering:** Retrieved context is sent to Google Gemini, which generates a grounded and accurate answer.
+8. **(Optional) TTS:** The answer can be converted to speech using Google Cloud TTS.
 
-## 🔧 Setup
+---
 
-### 1. Clone and Install
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+  
+- Google Cloud account with Generative AI and Text-to-Speech API enabled  
+- AstraDB account and key for vector storage  
+- Environment variables set in `.env` file
+
+### Installation
 
 ```bash
+git clone https://github.com/yourusername/rag-f1.git
+cd rag-f1
 npm install
-```
-
-### 2. Environment Variables
-
-Copy `.env.example` to `.env` and fill in your credentials:
-
-```env
-# Astra DB (https://astra.datastax.com)
-ASTRA_DB_NAMESPACE=default_keyspace
-ASTRA_DB_COLLECTION=f1gpt
-ASTRA_DB_API_ENDPOINT=https://your-database-id.apps.astra.datastax.com
-ASTRA_DB_APPLICATION_TOKEN=AstraCS:your-token-here
-
-# Google Gemini API (https://aistudio.google.com/app/apikey)
-GOOGLE_API_KEY=your-google-api-key-here
-```
-
-### 3. Set Up Astra DB
-
-1. Create a free account at [astra.datastax.com](https://astra.datastax.com)
-2. Create a new **Serverless (Vector)** database
-3. Create a namespace called `default_keyspace`
-4. Generate an Application Token
-5. Copy your API Endpoint and Token to `.env`
-
-### 4. Get Google Gemini API Key
-
-1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
-2. Create a new API key
-3. Add it to your `.env` file
-
-### 5. Load F1 Knowledge Base
-
-```bash
-npm run seed:clean
-```
-
-This will:
-- Scrape Formula 1 Wikipedia page
-- Split content into 512-character chunks
-- Generate embeddings for each chunk
-- Store in Astra DB for vector search
-
-### 6. Run Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) and start chatting!
-
-**🎙️ For voice features:** See [VOICE_SETUP.md](./VOICE_SETUP.md) for detailed voice setup guide.
-
-## 🎙️ Using Voice Features
-
-1. **Click the microphone icon** 🎤 in the chat input
-2. **Allow microphone access** (first time only)
-3. **Speak your question** - You'll see "Listening..."
-4. **AI processes and responds** with both text and voice
-5. **Click speaker icon** to stop audio playback
-
-**Voice Technologies:**
-- **STT**: Web Speech API (free, browser-native)
-- **TTS**: Google Cloud TTS (free tier: 1M chars/month)
-
-## 📝 Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run seed:clean` - Load F1 data into Astra DB
-- `npm run lint` - Run ESLint
-
-## 🎯 How It Works
-
-### RAG Pipeline
-
-1. **User Question** → Generate embedding (384D vector)
-2. **Vector Search** → Find top 5 similar chunks in Astra DB
-3. **Context Building** → Combine retrieved chunks into context
-4. **Prompt Engineering** → Build prompt with context + question
-5. **Gemini Streaming** → Generate response with real-time streaming
-6. **UI Update** → Display response word-by-word
-
-### Example Flow
-
-```typescript
-// User asks: "What is DRS in F1?"
-
-// 1. Generate embedding for the question
-const queryVector = await generateEmbedding("What is DRS in F1?");
-
-// 2. Search for similar content
-const docs = await searchSimilarDocuments(queryVector, 5);
-
-// 3. Build prompt with retrieved context
-const prompt = buildRAGPrompt(question, docs);
-
-// 4. Stream response from Gemini
-const { stream } = await generateStreamingResponse(prompt);
-
-// 5. Display in UI as it arrives
-for await (const chunk of stream) {
-  displayChunk(chunk.text());
-}
-```
-
-## 🧩 Modular Design
-
-Each module has a single responsibility:
-
-- **embeddings.ts**: Text → Vector (384D)
-- **vectorDb.ts**: Vector Search & Storage
-- **gemini.ts**: AI Response Generation
-- **rag.ts**: Orchestrates the full RAG workflow
-- **ChatInterface.tsx**: Reusable UI component
-
-All modules export clean, documented functions with TypeScript types.
-
-## 🎨 Customization
-
-### Add More Data Sources
-
-Edit `scripts/loadDb-clean.ts`:
-
-```typescript
-const data = [
-  "https://en.wikipedia.org/wiki/Formula_One",
-  "https://en.wikipedia.org/wiki/Formula_One_regulations",
-  // Add more URLs...
-];
-```
-
-### Change Branding
-
-In `app/page.tsx`:
-
-```typescript
-<ChatInterface
-  title="Your Title"
-  brandColor="from-blue-500 to-purple-500"
-  suggestedQuestions={[...]}
-/>
-```
-
-### Adjust AI Parameters
-
-In `lib/gemini.ts`:
-
-```typescript
-const defaultConfig = {
-  temperature: 0.7,    // Lower = more focused, Higher = more creative
-  topP: 0.95,
-  topK: 40,
-  maxOutputTokens: 2048,
-};
-```
-
-## 📚 Learn More
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Astra DB Docs](https://docs.datastax.com/en/astra-db-serverless/)
-- [Google Gemini API](https://ai.google.dev/gemini-api/docs)
-- [Transformers.js](https://huggingface.co/docs/transformers.js)
-
-## 📄 License
-
-MIT
-
-## 🙏 Acknowledgments
-
-- Formula 1 data from Wikipedia
-- Embeddings: `sentence-transformers/all-MiniLM-L6-v2`
-- LLM: Google Gemini 2.0 Flash Exp
-- Vector DB: DataStax Astra DB
-
